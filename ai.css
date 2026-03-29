@@ -1,0 +1,32 @@
+#bar {
+  position: fixed;
+  bottom: 5px;
+  right: 10px;
+  background-color: #9d566f;
+  color: white;
+  padding: 12px 120px;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-weight: 500;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: background-color 0.3s, opacity 0.3s;
+  opacity: 0.4;
+  text-align: center;
+  height: 20px;
+}
+#bar:hover {
+  background-color: #005ecc;
+  opacity: 1;
+}
+/* Animation class */
+#bar.active {
+  animation: slidein 0.4s forwards;
+}
+@keyframes slidein {
+  from {
+    height: 20px;
+  }
+  to {
+    height: 80vh;
+  }
+}

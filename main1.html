@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ITECify</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    <style>
+        :root {
+            --bg-deep: #0f1a20;
+            --bg-mid: #162028;
+            --bg-panel: #1c2b35;
+            --bg-raised: #243542;
+            --accent-teal: #4ecdc4;
+            --accent-brass: #c9a84c;
+            --accent-rust: #c0654a;
+            --text-main: #d8cfc4;
+            --text-dim: #7a8f9a;
+            --text-bright: #eee8e0;
+            --scrollbar: var(--accent-teal);
+            --border: rgba(78,205,196,0.15);
+            --border-warm: rgba(201,168,76,0.2);
+            --glow-teal: 0 0 18px rgba(78,205,196,0.18);
+            --glow-brass: 0 0 18px rgba(201,168,76,0.15);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --font-mono: 'Space Mono', monospace;
+            --font-display: 'Syne', sans-serif;
+        }
+
+        body.light {
+            --bg-deep: #f0ebe0;
+            --bg-mid: #e8e2d5;
+            --bg-panel: #ddd6c7;
+            --bg-raised: #cec7b5;
+            --text-main: #2a2017;
+            --text-dim: #7a6f5a;
+            --text-bright: #1a130b;
+            --accent-teal: #1d9a92;
+            --accent-brass: #8a6418;
+            --accent-rust: #a04832;
+            --scrollbar: #a78a51;
+            --border: rgba(40,60,50,0.12);
+            --border-warm: rgba(100,70,20,0.18);
+            --glow-teal: none;
+            --glow-brass: none;
+        }
+
+            body.light .arrow-btn {
+                background: #c9a84c;
+                border: var(--accent-brass);
+            }
+
+
+        .title-card {
+            background: linear-gradient(to bottom, var(--bg-panel) 40%, transparent);
+            border: 1px solid var(--border-warm);
+            border-bottom: none;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 10px 18px 2px;
+            position: relative;
+        }
+
+        /* Fix CodeMirror editor background respecting theme */
+        .editor-wrap .CodeMirror {
+            background: var(--bg-mid) !important;
+        }
+        /* Fix CodeMirror gutters in light mode */
+        body.light .editor-wrap .CodeMirror-gutters {
+            background: var(--bg-mid) !important;
+            border-right: 1px solid var(--border);
+        }
+
+        body.light .editor-wrap .CodeMirror-linenumber {
+            color: var(--text-dim) !important;
+        }
+        /* Default (light) CM theme text color */
+        body.light .editor-wrap .CodeMirror,
+        body.light .editor-wrap .CodeMirror-scroll {
+            color: var(--text-main);
+        }
+
+        body.light .tab-btn.active {
+            border-bottom-color: #c9a84c;
+            color: #c9a84c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+            body::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+                pointer-events: none;
+                opacity: 0.5;
+            }
+
+            body::after {
+                content: '';
+                position: fixed;
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, rgba(78,205,196,0.04) 0%, transparent 70%);
+                top: -200px;
+                left: -100px;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+        .main {
+            display: flex;
+            gap: 12px;
+            height: 100vh;
+            padding: 12px;
+            position: relative;
+            z-index: 1;
+            transition: filter 0.2s ease;
+            width: 100%;
+        }
+
+            .main.blurred {
+                filter: blur(6px);
+                pointer-events: none;
+                user-select: none;
+            }
+
+        .left {
+            display: flex;
+            flex-direction: column;
+            flex: 3;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--border-warm);
+            flex-shrink: 0;
+        }
+
+
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent-brass) 0%, var(--accent-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-style: italic;
+        }
+
+        .header-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+        }
+
+
+        .workwindow {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            box-shadow: var(--glow-teal), inset 0 1px 0 rgba(255,255,255,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .workwindow::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 40px;
+                height: 40px;
+                border-top: 2px solid var(--accent-brass);
+                border-right: 2px solid var(--accent-brass);
+                border-radius: 0 var(--radius-lg) 0 0;
+                opacity: 0.4;
+            }
+
+            .workwindow::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 40px;
+                height: 40px;
+                border-bottom: 2px solid var(--accent-brass);
+                border-left: 2px solid var(--accent-brass);
+                border-radius: 0 0 0 var(--radius-lg);
+                opacity: 0.4;
+                pointer-events: none;
+            }
+
+        .corner-tl {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border-top: 2px solid var(--accent-brass);
+            border-left: 2px solid var(--accent-brass);
+            border-radius: var(--radius-lg) 0 0 0;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .corner-br {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            border-bottom: 2px solid var(--accent-brass);
+            border-right: 2px solid var(--accent-brass);
+            border-radius: 0 0 var(--radius-lg) 0;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .workwindow-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+            .workwindow-label::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--border);
+            }
+
+        #output {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding-right: 4px;
+        }
+
+            #output::-webkit-scrollbar {
+                width: 3px;
+            }
+
+            #output::-webkit-scrollbar-thumb {
+                background: var(--scrollbar);
+                border-radius: 2px;
+                opacity: 0.5;
+            }
+
+            #output::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+        .posted-block {
+            margin-bottom: 14px;
+            padding-left: 10px;
+            border-left: 2px solid var(--accent-teal);
+            animation: slideIn 0.25s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .posted-block-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+            .posted-block-header small {
+                font-size: 0.7rem;
+                font-family: var(--font-mono);
+                color: var(--text-dim);
+            }
+
+        .lang-badge {
+            font-size: 0.6rem;
+            padding: 1px 8px;
+            border-radius: 99px;
+            border: 1px solid var(--border-warm);
+            color: var(--accent-brass);
+            font-family: var(--font-mono);
+            letter-spacing: 0.08em;
+            background: rgba(201,168,76,0.07);
+        }
+
+        .posted-block .CodeMirror,
+        .posted-block .cm-s-dracula.CodeMirror {
+            height: auto !important;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            border-radius: var(--radius-sm);
+            pointer-events: none;
+            background: transparent !important;
+        }
+
+        .posted-block .CodeMirror-scroll {
+            overflow: hidden !important;
+            min-height: unset;
+        }
+
+        .posted-block .CodeMirror-gutters,
+        .posted-block .cm-s-dracula .CodeMirror-gutters {
+            background: transparent !important;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .posted-block .CodeMirror-linenumber {
+            color: rgba(120,145,155,0.4) !important;
+            font-size: 10px;
+        }
+
+        .posted-block .CodeMirror-lines {
+            background: transparent !important;
+        }
+
+        .posted-block-edit-btn {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            font-size: 0.65rem;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            cursor: pointer;
+            pointer-events: auto;
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+            transition: all 0.15s;
+        }
+
+            .posted-block-edit-btn:hover {
+                color: var(--accent-teal);
+                border-color: var(--accent-teal);
+                box-shadow: 0 0 8px rgba(78,205,196,0.2);
+            }
+
+        .mode-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .mode-bar-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .mode-bar select {
+            background: var(--bg-raised);
+            color: var(--accent-brass);
+            border: 1px solid var(--border-warm);
+            border-radius: var(--radius-sm);
+            padding: 3px 8px;
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+            .mode-bar select:hover {
+                border-color: var(--accent-brass);
+            }
+
+        .input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .editor-wrap {
+            flex: 1;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+            .editor-wrap:focus-within {
+                border-color: rgba(78,205,196,0.4);
+                box-shadow: var(--glow-teal);
+            }
+
+            .editor-wrap .CodeMirror {
+                height: 130px;
+                font-size: 13px;
+                font-family: var(--font-mono);
+                background: var(--bg-mid) !important;
+            }
+
+            .editor-wrap .CodeMirror-gutters {
+                background: var(--bg-mid) !important;
+            }
+
+            .editor-wrap .CodeMirror-scroll {
+                min-height: 80px;
+            }
+
+        .arrow-btn {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            align-self: flex-end;
+            font-family: var(--font-mono);
+        }
+
+            .arrow-btn:hover {
+                background: var(--accent-teal);
+                color: var(--bg-deep);
+                border-color: var(--accent-teal);
+                box-shadow: var(--glow-teal);
+                transform: translateY(-1px);
+            }
+
+        .right {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 10px;
+            min-height: 0;
+            overflow: visible;
+        }
+
+        .members-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            box-shadow: var(--glow-teal);
+            overflow: visible;
+        }
+
+        .members-label {
+            font-size: 0.58rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-right: 4px;
+        }
+
+        .member-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            user-select: none;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+            --tip-color: #4ecdc4;
+        }
+
+            .member-circle:hover {
+                transform: scale(1.12);
+                border-color: currentColor;
+            }
+
+        .tooltp {
+            position: fixed;
+            transform: translateX(-50%) translateY(-4px);
+            opacity: 0;
+            transition: opacity 0.15s, transform 0.15s;
+            pointer-events: none;
+            white-space: nowrap;
+            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            padding: 4px 10px;
+            z-index: 502;
+            background: var(--bg-raised);
+            color: var(--tip-color);
+            border: 1px solid var(--tip-color);
+            box-shadow: 0 0 18px color-mix(in srgb, var(--tip-color) 30%, transparent);
+            border-radius: var(--radius-sm);
+        }
+
+            .tooltp::after {
+                content: '';
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                translate: -50% 0;
+                border-width: 4px;
+                border-style: solid;
+                border-color: transparent transparent var(--tip-color) transparent;
+            }
+
+        .chat-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--glow-teal);
+            position: relative;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -1px;
+        }
+
+            .tab-btn:hover {
+                color: var(--text-main);
+            }
+
+            .tab-btn.active {
+                color: var(--accent-teal);
+                border-bottom-color: var(--accent-teal);
+            }
+
+        #toggleTheme {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+            #toggleTheme:hover {
+                color: var(--accent-brass);
+            }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            padding: 14px;
+            gap: 10px;
+        }
+
+            .tab-content.active {
+                display: flex;
+            }
+
+        .chat-output {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+            .chat-output::-webkit-scrollbar {
+                width: 3px;
+            }
+
+            .chat-output::-webkit-scrollbar-thumb {
+                background: var(--scrollbar);
+                border-radius: 2px;
+            }
+
+            .chat-output::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+        .chat-bubble-wrap {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            animation: slideIn 0.2s ease;
+        }
+
+            .chat-bubble-wrap.right {
+                align-items: flex-end;
+            }
+
+            .chat-bubble-wrap.left {
+                align-items: flex-start;
+            }
+
+        .chat-bubble-name {
+            font-size: 0.62rem;
+            color: var(--text-dim);
+            margin-bottom: 3px;
+            letter-spacing: 0.06em;
+        }
+
+        .chat-bubble {
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 82%;
+            word-wrap: break-word;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+            .chat-bubble.right {
+                background: var(--bg-raised);
+                border: 1px solid var(--border);
+                border-radius: 12px 12px 2px 12px;
+            }
+
+            .chat-bubble.left {
+                background: var(--bg-mid);
+                border: 1px solid rgba(255,255,255,0.05);
+                border-radius: 12px 12px 12px 2px;
+            }
+
+        .chat-textarea {
+            width: 100%;
+            height: 72px;
+            background: var(--bg-mid);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 10px 12px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+            .chat-textarea:focus {
+                border-color: rgba(78,205,196,0.4);
+                box-shadow: var(--glow-teal);
+            }
+
+            .chat-textarea::placeholder {
+                color: var(--text-dim);
+            }
+
+        .blur-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginoverlay">
+        <div class="box">
+            <!-- ✅ theme toggle -->
+            <button class="theme-btn" id="theme-btn" title="Toggle theme">🌙</button>
+            <div class="login-box">
+
+                <div class="login-header">
+                    <h1 class="modal-title" id="modal-title">Sign-In</h1>
+                </div>
+
+                <div class="input-box">
+                    <input type="text" id="username" class="input-field" placeholder="◉ Username" autocomplete="off" required>
+                    <span class="icon icon-user"></span>
+                </div>
+
+                <div class="input-box">
+                    <input type="text" id="projectcode" class="input-field" placeholder="⬡ 1234…" autocomplete="off" required>
+                </div>
+
+                <div class="input-submit">
+                    <button class="submit-btn" id="submit" onclick="saveData()">Enter</button>
+                </div>
+
+            </div>  <!-- /.login-box -->
+        </div>    <!-- /.box -->
+    </div>
+
+    <!-- MAIN BLURRED -->
+
+    <div class="main">
+        <div class="left">
+            <div class="header-bar">
+                <div class="title-card">
+                    <img src="ttl.png" style="height:100px; width: auto;">
+                </div>
+                <div class="logo-sub">cod: *insert w/ js*</div>
+                <div class="header-status">
+                    <button onclick="toggleTheme()" id="toggleTheme">☀ theme</button>
+                </div>
+            </div>
+
+            <div class="workwindow">
+                <span class="corner-tl"></span>
+                <span class="corner-br"></span>
+                <div class="workwindow-label">code stream</div>
+                <div id="output"></div>
+                <div class="mode-bar">
+                    <span class="mode-bar-label">lang</span>
+                    <select id="modeSelect" onchange="changeMode()">
+                        <option value="null">Plain text</option>
+                        <option value="htmlmixed">HTML</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="css">CSS</option>
+                        <option value="clike">C++</option>
+                    </select>
+                </div>
+
+                <div class="input-row">
+                    <div class="editor-wrap">
+                        <textarea id="codeInput"></textarea>
+                    </div>
+                    <button class="arrow-btn" onclick="postCode()" title="Post">→</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right">
+            <div class="members-panel">
+                <span class="members-label">crew</span>
+                <div class="member-circle" id="my-circle" title="You"></div>
+                <div class="member-circle" title="Alice Wonderland"></div>
+                <div class="member-circle" title="Bob Ross"></div>
+                <div class="member-circle" title="Charles Boyle"></div>
+            </div>
+        <!--BUTTON FOR OPEN/CLOSE AI CHAT BOX-->
+            <button class="fab" id="fab" onclick="toggleChat()">
+  <svg class="fab-icon" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+  </svg>
+  <span id="fabLabel">Chat</span>
+</button>
+
+         <!--CHAT PANEL FOR AI/MESSAGING-->
+            <div class="chat-panel">
+                <div class="tab-bar">
+                    <button class="tab-btn active" onclick="switchTab('groupchat', this)">Group</button>
+                    <button class="tab-btn" onclick="switchTab('ai', this)">AI</button>
+                </div>
+
+                <div id="tab-groupchat" class="tab-content active">
+                    <div id="chat-output" class="chat-output"></div>
+                    <div class="input-row">
+                        <textarea class="chat-textarea" id="chat-input" placeholder="message the crew..."></textarea>
+                        <button class="arrow-btn" onclick="postChat()" title="Send">→</button>
+                    </div>
+                </div>
+
+                <div id="tab-ai" class="tab-content">
+                    <div id="ai-output" class="chat-output"></div>
+                    <div class="input-row">
+                        <textarea class="chat-textarea" id="ai-input" placeholder="ask the AI..."></textarea>
+                        <button class="arrow-btn" onclick="postAI()" title="Send">→</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="blur-overlay" class="blur-overlay"></div>
+    <script>
+
+        function openModal() {
+            document.querySelector('.main').classList.add('blurred');
+            document.getElementById('blur-overlay').style.display = 'block';
+            document.getElementById('loginoverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.querySelector('.main').classList.remove('blurred');
+            document.getElementById('blur-overlay').style.display = 'none';
+            document.getElementById('loginoverlay').style.display = 'none';
+        }
+        //LOG IN POP-UP
+        window.onload = function () {
+              if (!localStorage.getItem("username") || !localStorage.getItem("projectcode")) {
+                    openModal();
+            }  else {
+                const saved = localStorage.getItem("projectCode");
+                const savedUser = localStorage.getItem("username");
+                if (saved) document.querySelector(".logo-sub").textContent = "cod: " + saved;
+                if (savedUser) setMyCircle(savedUser);
+            }
+            startFakeActivity();
+            if (localStorage.getItem("theme") === "light") {
+                document.body.classList.add("light");
+                editor.setOption("theme", "default");
+                updateMemberColors();
+                document.getElementById("toggleTheme").textContent = "☾ theme";
+            }
+
+        };
+
+        // Two palettes:  dark mode, light mode
+        const paletteDark = [
+            "#4ecdc4", "#c9a84c", "#e07b7b", "#7baee0", "#c77be0",
+            "#e0a07b", "#7be0d4", "#b0e07b", "#e07bb5", "#7b9ee0"
+        ];
+        const paletteLight = [
+            "#0e7a72", "#7a5210", "#9e3a2a", "#2a6898", "#7a2aa8",
+            "#9e5c18", "#1a8a80", "#4a8210", "#9e2a70", "#2a5a9e"
+        ];
+
+        const memberColors = {}; // stores { dark, light } per name
+        const memberCircles = []; // store refs to update on theme toggle
+        const myName = "You";
+        const fakeUsers = ["Alice Wonderland", "Bob Ross", "Charles Boyle"];
+
+        const fakeChatMessages = [
+            "anyone seen the bug on line 42?", "pushing my changes now",
+            "can someone review my PR?", "I broke something, fixing...",
+            "finally got the tests passing 🎉", "who changed the config file??",
+            "lunch break, brb", "merged! check the latest build"
+        ];
+
+        const fakeCodeSnippets = [
+            { mode: "htmlmixed", text: '<div class="card">\n  <h2>Hello World</h2>\n  <p>Refactored layout</p>\n</div>' },
+            { mode: "javascript", text: 'function fetchData(url) {\n  return fetch(url)\n    .then(r => r.json())\n    .catch(err => console.error(err));\n}' },
+            { mode: "css", text: '.container {\n  display: flex;\n  gap: 1rem;\n  padding: 20px;\n}' },
+            { mode: "javascript", text: '// fixed null pointer\nconst value = obj?.data ?? "default";' },
+            { mode: "htmlmixed", text: '<button onclick="submit()">\n  Push to main\n</button>' },
+        ];
+
+        const modeLabels = {
+            null: "txt", htmlmixed: "HTML",
+            javascript: "JS", css: "CSS", clike: "C++"
+        };
+
+        function isLightMode() {
+            return document.body.classList.contains("light");
+        }
+
+        function getMemberColor(name) {
+            const colors = memberColors[name];
+            if (!colors) return "#4ecdc4";
+            return isLightMode() ? colors.light : colors.dark;
+        }
+
+        // ── Member circles ─────────────────────────────────────────────────────────
+        document.querySelectorAll(".member-circle").forEach((circle, i) => {
+            const name = circle.getAttribute("title");
+            const initials = name.split(" ").map(w => w[0]).join("");
+            const darkColor = paletteDark[i % paletteDark.length];
+            const lightColor = paletteLight[i % paletteLight.length];
+            memberColors[name] = { dark: darkColor, light: lightColor };
+
+            circle.textContent = initials;
+
+            // Apply initial color
+            circle.style.background = darkColor + "22";
+            circle.style.color = darkColor;
+
+            // Store ref so we can update on theme toggle
+            memberCircles.push({ circle, darkColor, lightColor });
+
+            // Body-level tooltip
+            const tip = document.createElement("div");
+            tip.className = "tooltp";
+            tip.textContent = name;
+            tip.style.setProperty("--tip-color", darkColor);
+            document.body.appendChild(tip);
+
+            circle.addEventListener("mouseenter", () => {
+                const rect = circle.getBoundingClientRect();
+                const color = getMemberColor(name);
+                tip.style.setProperty("--tip-color", color);
+                tip.style.left = (rect.left + rect.width / 2) + "px";
+                tip.style.top = (rect.bottom + 8) + "px";
+                tip.style.opacity = "1";
+                tip.style.transform = "translateX(-50%) translateY(0)";
+            });
+            circle.addEventListener("mouseleave", () => {
+                tip.style.opacity = "0";
+                tip.style.transform = "translateX(-50%) translateY(-4px)";
+            });
+
+            // Store tip ref on circle for theme updates
+            circle._tip = tip;
+        });
+
+        function setMyCircle(username) {
+            const circle = document.getElementById("my-circle");
+            const initials = username.split(" ").map(w => w[0]).join("").toUpperCase();
+            circle.textContent = initials;
+            circle.setAttribute("title", username);
+            circle.style.background = "rgba(78,205,196,0.15)";
+            circle.style.color = "var(--accent-teal)";
+            circle.style.border = "2px solid var(--accent-teal)";
+        }
+
+
+        function updateMemberColors() {
+            const light = isLightMode();
+            memberCircles.forEach(({ circle, darkColor, lightColor }) => {
+                const color = light ? lightColor : darkColor;
+                circle.style.background = color + "22";
+                circle.style.color = color;
+                if (circle._tip) circle._tip.style.setProperty("--tip-color", color);
+            });
+        }
+
+        // ── CodeMirror editor ──────────────────────────────────────────────────────
+        const editor = CodeMirror.fromTextArea(document.getElementById("codeInput"), {
+            mode: "null",
+            theme: "dracula",
+            lineNumbers: true,
+            autoCloseTags: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            tabSize: 2,
+            lineWrapping: true,
+        });
+
+        function changeMode() {
+            const m = document.getElementById("modeSelect").value;
+            editor.setOption("mode", m === "null" ? null : m);
+        }
+
+        // ── Post code block ────────────────────────────────────────────────────────
+        let editingBlockId = null;
+
+        function postCode() {
+            const text = editor.getValue();
+            if (!text.trim()) return;
+            const mode = document.getElementById("modeSelect").value;
+
+            if (editingBlockId) {
+                const old = document.getElementById(editingBlockId);
+                if (old && old._cmInstance) old._cmInstance.setValue(text);
+                editingBlockId = null;
+                editor.setValue(""); editor.focus();
+                return;
+            }
+
+            const output = document.getElementById("output");
+            appendHighlightedBlock(output, myName, text, "var(--accent-teal)", mode, true);
+            output.scrollTop = output.scrollHeight;
+            editor.setValue(""); editor.focus();
+        }
+
+        function appendHighlightedBlock(container, name, text, color, mode, editable) {
+            const id = "block-" + Date.now() + Math.random();
+            const currentTheme = isLightMode() ? "default" : "dracula";
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "posted-block";
+            wrapper.id = id;
+            wrapper.style.borderLeftColor = color;
+
+            const header = document.createElement("div");
+            header.className = "posted-block-header";
+
+            const label = document.createElement("small");
+            label.textContent = name;
+            label.style.color = color;
+            header.appendChild(label);
+
+            const badge = document.createElement("span");
+            badge.className = "lang-badge";
+            badge.textContent = modeLabels[mode] || mode;
+            header.appendChild(badge);
+            wrapper.appendChild(header);
+
+            const cmWrap = document.createElement("div");
+            cmWrap.style.cssText = "position:relative;";
+
+            const cmHost = document.createElement("div");
+            cmWrap.appendChild(cmHost);
+
+            const cmInst = CodeMirror(cmHost, {
+                value: text,
+                mode: mode === "null" ? null : mode,
+                theme: currentTheme,
+                lineNumbers: true,
+                readOnly: true,
+                lineWrapping: true,
+            });
+            wrapper._cmInstance = cmInst;
+
+            if (editable) {
+                const editBtn = document.createElement("button");
+                editBtn.className = "posted-block-edit-btn";
+                editBtn.textContent = "✏";
+                editBtn.onclick = () => {
+                    editor.setValue(text);
+                    document.getElementById("modeSelect").value = mode;
+                    changeMode();
+                    editingBlockId = id;
+                    editor.focus();
+                };
+                cmWrap.appendChild(editBtn);
+            }
+
+            wrapper.appendChild(cmWrap);
+            container.appendChild(wrapper);
+            setTimeout(() => cmInst.refresh(), 50);
+            return wrapper;
+        }
+
+        // ── Tab switching ──────────────────────────────────────────────────────────
+        function switchTab(tab, clickedBtn) {
+            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById("tab-" + tab).classList.add("active");
+            clickedBtn.classList.add("active");
+        }
+
+        // ── Chat ───────────────────────────────────────────────────────────────────
+        function appendChatMessage(container, name, text, side, color) {
+            const wrap = document.createElement("div");
+            wrap.className = `chat-bubble-wrap ${side}`;
+
+            const nameEl = document.createElement("div");
+            nameEl.className = "chat-bubble-name";
+            nameEl.textContent = name;
+            nameEl.style.color = color || "var(--text-dim)";
+
+            const bubble = document.createElement("div");
+            bubble.className = `chat-bubble ${side}`;
+            bubble.textContent = text;
+
+            wrap.appendChild(nameEl);
+            wrap.appendChild(bubble);
+            container.appendChild(wrap);
+        }
+
+        function postChat() {
+            const input = document.getElementById("chat-input");
+            const output = document.getElementById("chat-output");
+            if (!input.value.trim()) return;
+            appendChatMessage(output, myName, input.value, "right", "var(--accent-teal)");
+            output.scrollTop = output.scrollHeight;
+            input.value = "";
+        }
+
+        function postAI() {
+            const input = document.getElementById("ai-input");
+            const output = document.getElementById("ai-output");
+            const text = input.value.trim();
+            if (!text) return;
+            appendChatMessage(output, "You", text, "right", "var(--accent-teal)");
+            output.scrollTop = output.scrollHeight;
+            input.value = "";
+            aiHistory.push({ role: 'user', content: text });
+            setTimeout(async () => {
+                const reply = await askAI(text);
+                appendChatMessage(output, "🤖 AI", reply, "left", "var(--accent-brass)");
+                output.scrollTop = output.scrollHeight;
+            }, 300);
+        }
+
+        // ── Theme toggle ───────────────────────────────────────────────────────────
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle("light");
+            localStorage.setItem("theme", isLight ? "light" : "dark");
+
+            const cmTheme = isLight ? "default" : "dracula";
+            editor.setOption("theme", cmTheme);
+            document.querySelectorAll('.posted-block').forEach(b => {
+                if (b._cmInstance) b._cmInstance.setOption("theme", cmTheme);
+            });
+
+            updateMemberColors();
+
+            document.getElementById("toggleTheme").textContent = isLight ? "☾ theme" : "☀ theme";
+        }
+
+        // ── Fake activity ──────────────────────────────────────────────────────────
+        function fakeActivity() {
+            const name = fakeUsers[Math.floor(Math.random() * fakeUsers.length)];
+            const color = getMemberColor(name);
+
+            if (Math.random() > 0.4) {
+                const output = document.getElementById("output");
+                const snippet = fakeCodeSnippets[Math.floor(Math.random() * fakeCodeSnippets.length)];
+                appendHighlightedBlock(output, name, snippet.text, color, snippet.mode, false);
+                output.scrollTop = output.scrollHeight;
+            }
+            if (Math.random() > 0.3) {
+                const text = fakeChatMessages[Math.floor(Math.random() * fakeChatMessages.length)];
+                const chatOutput = document.getElementById("chat-output");
+                appendChatMessage(chatOutput, name, text, "left", color);
+                chatOutput.scrollTop = chatOutput.scrollHeight;
+            }
+        }
+
+        function startFakeActivity() {
+            setTimeout(() => { fakeActivity(); startFakeActivity(); }, 4000 + Math.random() * 4000);
+        }
+
+
+        // Login pop up
+        function focusField(fieldId) {
+            document.getElementById('btn-username').classList.remove('active');
+            document.getElementById('btn-code').classList.remove('active');
+
+            const btnId = fieldId === 'username' ? 'btn-username' : 'btn-code';
+            document.getElementById(btnId).classList.add('active');
+            document.getElementById(fieldId).focus();
+        }
+
+        function saveData() {
+            const username = document.getElementById("username").value.trim();
+            const projectCode = document.getElementById("projectcode").value.trim();
+            const button = document.getElementById("submit");
+
+            // 1. empty check
+            if (username === "" || projectCode === "") {
+                button.innerText = "Fill all fields!";
+                shake(button);
+                setTimeout(() => { button.innerText = "Enter"; }, 2000);
+                return;
+            }
+
+            // 2. ✅ check project code (not username) for letters
+            if (/[a-zA-Z]/.test(projectCode)) {
+                button.innerText = "⚠ Invalid code!";
+                shake(document.getElementById("submit"));
+                setTimeout(() => { button.innerText = "Enter"; }, 2000);
+                return;
+            }
+
+            // 3. all good — save and fade out
+            localStorage.setItem("username", username);
+            localStorage.setItem("projectCode", projectCode);
+            setMyCircle(username);
+            document.querySelector(".logo-sub").textContent = "cod: " + projectCode;
+
+            button.innerText = "Saved!";
+            const loginBox = document.querySelector(".login-box");
+            loginBox.classList.add("fade-out");
+            setTimeout(() => { loginBox.style.display = "none"; }, 550);
+            document.querySelector('.main').classList.remove('blurred');
+            document.getElementById('blur-overlay').style.display = 'none';
+            document.getElementById('loginoverlay').style.display = 'none';
+        }
+
+        function shake(el) {
+            el.animate([
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-6px)' },
+                { transform: 'translateX(6px)' },
+                { transform: 'translateX(-4px)' },
+                { transform: 'translateX(4px)' },
+                { transform: 'translateX(0)' }
+            ], { duration: 320, easing: 'ease-in-out' });
+        }
+        const themeBtn = document.getElementById('theme-btn');
+
+        themeBtn.addEventListener('click', () => {
+            toggleTheme(); // use the real function
+            const boxlog = document.getElementsByClassName("box");
+            boxlog.classList.add("light-mode");
+            // update icon
+            if (document.body.classList.contains('light')) {
+                themeBtn.textContent = '☀️';
+            } else {
+                themeBtn.textContent = '🌙';
+            }
+        });
+        // Open/Close a button
+let aiHistory = [];
+
+async function askAI(text) {
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: aiHistory })
+        });
+        const data = await response.json();
+        if (!response.ok) return "Error: " + (data.detail || "Unknown error");
+        const reply = data.reply;
+        aiHistory.push({ role: "assistant", content: reply });
+        return reply;
+    } catch (e) {
+        return "Connection error: " + e.message;
+    }
+}
+let chatOpen = false;
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.querySelector('.chat-panel').classList.toggle('open', chatOpen);
+  document.getElementById('fab').classList.toggle('open', chatOpen);
+  document.getElementById('fabLabel').textContent = chatOpen ? 'Close' : 'Chat';
+}
+    </script>
+</body>
+</html>
